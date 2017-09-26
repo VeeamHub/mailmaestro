@@ -1,0 +1,22 @@
+.green-background {
+	background-color:#00B336;
+}
+.vh100 {
+	height: 100vh
+}
+.block {
+	background:rgba(30, 30, 30, 0.5);
+	box-sizing: border-box; 
+	z-index: 10000;
+	top: 0;
+	left: 0;
+	position: fixed;
+	width: 100%;
+	height: 100%;
+}
+.main {
+	z-index: 0;
+}
+.maestroheader {
+	background-color: #cfffdaff;
+}

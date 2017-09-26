@@ -1,0 +1,18 @@
+{
+    "LDAPServer": "localhost",
+    "LDAPUser": "readonly",
+	"LDAPPort": 389,
+	"LDAPPortSec": 636,
+	"LDAPSecure": false,
+	"LDAPBase": "DC=x,DC=local",
+	"VBOServer": "localhost",
+	"VBOPort": 4443,
+	"VBOUsername": "administrator",
+	"VBOVersion": "v1",
+	"VBOOrg": "exchange.x.local",
+    "VBOMailBox": "ppeeters@x.local",
+    "LocalStop": true,
+    "LocalPort": 4123,
+    "LocalCert":"c:\\d\\openssl\\bin\\cert.pem",
+    "LocalKey":"c:\\d\\openssl\\bin\\key.pem"
+}
