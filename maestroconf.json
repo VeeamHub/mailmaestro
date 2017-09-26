@@ -13,6 +13,6 @@
     "VBOMailBox": "ppeeters@x.local",
     "LocalStop": true,
     "LocalPort": 4123,
-    "LocalCert":"c:\\d\\openssl\\bin\\cert.pem",
-    "LocalKey":"c:\\d\\openssl\\bin\\key.pem"
+    "LocalCert":"",
+    "LocalKey":""
 }
