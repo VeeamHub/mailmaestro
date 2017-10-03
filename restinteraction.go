@@ -225,6 +225,7 @@ func (r *RestAPI) GetRestoreMailboxesPage(sessionId string, offset int, limit in
 						page = RestoreMailboxPage{}
 						err = json.Unmarshal(body, &page)
 					}
+
 				} else {
 					err = fmt.Errorf("Got bad response code %d", resp.StatusCode)
 				}

@@ -231,7 +231,12 @@ func (g GUIServeHTTP) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 							if len(subrequest) > 2 {
 								errRestore, feedback := g.RestAPI.DoRestMailboxItem(g.RestoreSession.Id, g.RestoreMailbox.Id, subrequest[2], currentSession.LDAPUser.Email, currentSession.LDAPUser.Password)
 								if errRestore == nil && len(feedback.Exceptions) == 0 {
-									resp = GUIRestoreResponse{"success", "", feedback.CreatedItemsCount, feedback.MergedItemsCount, feedback.SkippedItemsCount, feedback.FailedItemsCount}
+									resp = GUIRestoreResponse{Result: "success",
+										Message:           "",
+										CreatedItemsCount: feedback.CreatedItemsCount,
+										MergedItemsCount:  feedback.MergedItemsCount,
+										SkippedItemsCount: feedback.SkippedItemsCount,
+										FailedItemsCount:  feedback.FailedItemsCount}
 								} else if errRestore == nil {
 									resp = GUIRestoreResponse{"failure", "Backend Rest API", 0, 0, 0, 0}
 
