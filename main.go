@@ -35,25 +35,25 @@ func lookForFolder(mbxFolders RestoreMailboxFolderPage, id string) *RestoreMailb
 	return nil
 }
 func main() {
-	var pport = flag.Int("port", 4123, "Mail maestro web port")
+	var pport = flag.Int("localport", 4123, "Mail maestro web port")
 	/*
 		// For windows : http://gnuwin32.sourceforge.net/packages/openssl.htm
 		set OPENSSL_CONF=C:\d\openssl\share\openssl.cnf
 		openssl.exe genrsa 2048 > key.pem
 		openssl.exe req -new -x509 -key key.pem -out cert.pem -days 3650
 	*/
-	var pcert = flag.String("cert", "", "Cert file for https, if none is provided, it will start in http modus")
-	var pkey = flag.String("key", "", "Key file for https, if none is provided, it will start in http modus")
-	var plocalstop = flag.Bool("lstop", false, "Allow typing stop to stop the service")
+	var pcert = flag.String("localcert", "", "Cert file for https, if none is provided, it will start in http modus")
+	var pkey = flag.String("localkey", "", "Key file for https, if none is provided, it will start in http modus")
+	var plocalstop = flag.Bool("localstop", false, "Allow typing stop to stop the service")
 
 	var pldapserver = flag.String("ldapserver", "", "ldap server")
-	var pldapreadonlyuser = flag.String("ldapreadonlyuser", "", "ldap username")
-	var pldapreadonlypassword = flag.String("ldapreadonlypassword", "", "ldap password")
-	var pldapbaseDN = flag.String("ldapbaseDN", "", "baseDN")
+	var pldapreadonlyuser = flag.String("ldapuser", "", "ldap username")
+	var pldapreadonlypassword = flag.String("ldaprpassword", "", "ldap password")
+	var pldapbaseDN = flag.String("ldapbase", "", "baseDN")
 
-	var pldapport = flag.Int("ldapport", 389, "ldapport override")
-	var pldapportsec = flag.Int("ldapsecport", 636, "ldapport override")
-	var pldapsec = flag.Bool("ldapsecure", false, "ldap secure")
+	var pldapport = flag.Int("ldapport", 389, "ldap port override")
+	var pldapportsec = flag.Int("ldapportsec", 636, "ldap secure port override")
+	var pldapsec = flag.Bool("ldapsecure", false, "should we try to connect over ldap secure")
 
 	var pvborestserver = flag.String("vboserver", "localhost", "Rest API for VBO 365")
 	var pvboport = flag.Int("vboport", 4443, "Rest API port for VBO365")
@@ -62,8 +62,8 @@ func main() {
 	var pvbousername = flag.String("vbouser", "", "Rest API user")
 	var pvbopassword = flag.String("vbopassword", "", "Rest API password")
 
-	var pvboorg = flag.String("vboorganization", "", "Will default to first one found if none is supplied")
-	var pmailboxuser = flag.String("mailboxuser", "", "supply email address")
+	var pvboorg = flag.String("vboorg", "", "Will default to first one found if none is supplied")
+	var pmailboxuser = flag.String("vbomailbox", "", "supply email address")
 
 	var pconfig = flag.String("config", "maestroconf.json", "Use a json config file")
 	var pdump = flag.String("dump", "", "Dump config to file passed as a parameter")

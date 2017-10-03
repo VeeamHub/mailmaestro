@@ -1,6 +1,6 @@
 {
-    "LDAPServer": "localhost",
-    "LDAPUser": "readonly",
+	"LDAPServer": "localhost",
+	"LDAPUser": "readonly",
 	"LDAPPort": 389,
 	"LDAPPortSec": 636,
 	"LDAPSecure": false,
@@ -10,9 +10,9 @@
 	"VBOUsername": "administrator",
 	"VBOVersion": "v1",
 	"VBOOrg": "exchange.x.local",
-    "VBOMailBox": "ppeeters@x.local",
-    "LocalStop": true,
-    "LocalPort": 4123,
-    "LocalCert":"",
-    "LocalKey":""
+	"VBOMailBox": "ppeeters@x.local",
+	"LocalStop": true,
+	"LocalPort": 4123,
+	"LocalCert":"",
+	"LocalKey":""
 }

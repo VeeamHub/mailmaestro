@@ -75,7 +75,7 @@ openssl req -new -x509 -key $MAILMAESTROPATH/private.pem -out $MAILMAESTROPATH/r
 
 You can then edit maestroconf.json, or just supply via the cmdline e.g.
 ```
-$MAILMAESTROPATH/mailmaestro -config $MAILMAESTROPATH/maestroconf.json -key $MAILMAESTROPATH/private.pem -cert $MAILMAESTROPATH/req.pem
+$MAILMAESTROPATH/mailmaestro -config $MAILMAESTROPATH/maestroconf.json -localkey $MAILMAESTROPATH/private.pem -localcert $MAILMAESTROPATH/req.pem
 ```
 
 You can now browse to "https://myip:4123". Notice that the port remains the same, if both key and cert is supplied, the server starts in SSL mode automatically
