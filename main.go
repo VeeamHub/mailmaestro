@@ -12,6 +12,7 @@ import (
 	"os"
 	"strings"
 	"sync"
+	"time"
 
 	"golang.org/x/crypto/ssh/terminal"
 )
@@ -46,7 +47,6 @@ func main() {
 	var pkey = flag.String("localkey", "", "Key file for https, if none is provided, it will start in http modus")
 	var plocalstop = flag.Bool("localstop", false, "Allow typing stop to stop the service")
 
-
 	var pldapserver = flag.String("ldapserver", "", "ldap server")
 	var pldapreadonlyuser = flag.String("ldapuser", "", "ldap username")
 	var pldapreadonlypassword = flag.String("ldaprpassword", "", "ldap password")
@@ -58,7 +58,7 @@ func main() {
 
 	var pvborestserver = flag.String("vboserver", "localhost", "Rest API for VBO 365")
 	var pvboport = flag.Int("vboport", 4443, "Rest API port for VBO365")
-	var pvboversion = flag.String("vboversion", "v1", "Rest API version")
+	var pvboversion = flag.String("vboversion", "v2", "Rest API version")
 
 	var pvbousername = flag.String("vbouser", "", "Rest API user")
 	var pvbopassword = flag.String("vbopassword", "", "Rest API password")
@@ -66,10 +66,11 @@ func main() {
 	var pvboorg = flag.String("vboorg", "", "Will default to first one found if none is supplied")
 	var pmailboxuser = flag.String("vbomailbox", "", "supply email address")
 
+	//override if AD users do not match the email address in the system
+	var pmanualmap = flag.String("manualmap", "", "User authenticating to AD (so it can be different then the Mailbox)")
+
 	var pconfig = flag.String("config", "maestroconf.json", "Use a json config file")
 	var pdump = flag.String("dump", "", "Dump config to file passed as a parameter")
-
-	
 
 	flag.Parse()
 
@@ -99,7 +100,7 @@ func main() {
 		config.LDAPPortSec = 4443
 	}
 	if config.VBOVersion == "" {
-		config.VBOVersion = "v1"
+		config.VBOVersion = "v2"
 	}
 	if config.VBOPort == 0 {
 		config.VBOPort = 4443
@@ -159,6 +160,9 @@ func main() {
 	}
 	if *pvboversion != "v1" {
 		config.VBOVersion = *pvboversion
+	}
+	if *pmanualmap != "" {
+		config.ManualMap = *pmanualmap
 	}
 
 	if *pdump != "" {
@@ -243,7 +247,14 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	err, user := ldapc.SearchEmailUser(config.VBOMailBox)
+
+	authuser := config.VBOMailBox
+	if config.ManualMap != "" {
+		authuser = config.ManualMap
+		log.Printf("Manual mapping the user for authenticating to %s instead of %s", authuser, config.VBOMailBox)
+	}
+
+	err, user := ldapc.SearchEmailUser(authuser)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -270,9 +281,27 @@ func main() {
 						}
 					}
 				}
-				log.Printf("Using Organization %s (%s) - point %s", orgSelected.Id, orgSelected.Name, orgSelected.LastBackupTime)
+				//https://helpcenter.veeam.com/docs/vbo365/rest/get_organizations_id.html?ver=20
+				//https://helpcenter.veeam.com/docs/vbo365/rest/post_organizations_id_action.html?ver=20
+				//2018-11-13T12:52:25.1336999Z
+				//<yyyy.MM.dd hh:mm:ss>.
+				// go conversion https://golang.org/src/time/format.go
+
+				layout := "2006-01-02T15:04:05.0000000Z"
+				targetdate := orgSelected.LastBackupTime
+				t, err := time.Parse(layout, targetdate)
+
+				if err != nil {
+					log.Printf("Tried to parse %s", orgSelected.LastBackupTime)
+					log.Printf("Could not convert last backup date to restore point date %s, we will fail probably soon or older API", err)
+				} else {
+					targetlayout := "2006.01.02 15:04:05"
+					targetdate = t.Format(targetlayout)
+				}
+
+				log.Printf("Using Organization %s (%s) - point %s", orgSelected.Id, orgSelected.Name, targetdate)
 				var restoreSession RestoreSession
-				err, restoreSession = restapi.StartRestoreAction(orgSelected.Id, orgSelected.LastBackupTime)
+				err, restoreSession = restapi.StartRestoreAction(orgSelected.Id, targetdate, "vex")
 
 				for key, link := range restoreSession.Links {
 					log.Printf("%s %s", key, link.Href)

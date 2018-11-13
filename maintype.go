@@ -19,4 +19,5 @@ type MailMaestroConfig struct {
 	LocalPort    int    `json:"LocalPort"`
 	LocalCert    string `json:"LocalCert"`
 	LocalKey     string `json:"LocalKey"`
+	ManualMap    string `json:"ManualMap"`
 }

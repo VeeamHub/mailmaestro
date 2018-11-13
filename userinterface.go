@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"html/template"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"path/filepath"
@@ -17,6 +18,12 @@ import (
 
 func newUUID() string {
 	return uuid.New().String()
+}
+
+type GUIRestoreRequestMessage struct {
+	Id       string `json:"id"`
+	Username string `json:"restoreusername"`
+	Password string `json:"restorepassword"`
 }
 
 type GUIServerSession struct {
@@ -146,7 +153,7 @@ func (g GUIServeHTTP) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			g.SessionIDLock.RLock()
 			defer g.SessionIDLock.RUnlock()
 
-			currentSession, foundid := (*(g.Sessions))[sessid]
+			_, foundid := (*(g.Sessions))[sessid]
 
 			if foundid {
 				subrequest := strings.Split(r.RequestURI[37:], "/")
@@ -229,26 +236,43 @@ func (g GUIServeHTTP) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 							var resp GUIRestoreResponse
 
 							if len(subrequest) > 2 {
-								errRestore, feedback := g.RestAPI.DoRestMailboxItem(g.RestoreSession.Id, g.RestoreMailbox.Id, subrequest[2], currentSession.LDAPUser.Email, currentSession.LDAPUser.Password)
-								if errRestore == nil && len(feedback.Exceptions) == 0 {
-									resp = GUIRestoreResponse{Result: "success",
-										Message:           "",
-										CreatedItemsCount: feedback.CreatedItemsCount,
-										MergedItemsCount:  feedback.MergedItemsCount,
-										SkippedItemsCount: feedback.SkippedItemsCount,
-										FailedItemsCount:  feedback.FailedItemsCount}
-								} else if errRestore == nil {
-									resp = GUIRestoreResponse{"failure", "Backend Rest API", 0, 0, 0, 0}
 
-									log.Printf("Exceptions during restore: ")
-									for _, excep := range feedback.Exceptions {
-										log.Printf(" EX-%s", excep)
-									}
+								//well not let do any error checking for now
+								var bodyrequest GUIRestoreRequestMessage
+								b, err := ioutil.ReadAll(r.Body)
+								defer r.Body.Close()
+								if err != nil {
+									resp = GUIRestoreResponse{"failure", "No request in body", 0, 0, 0, 0}
 								} else {
-									resp = GUIRestoreResponse{"failure", "Internal Server Error", 0, 0, 0, 0}
+									err = json.Unmarshal(b, &bodyrequest)
+									if err != nil {
+										resp = GUIRestoreResponse{"failure", "Could not unmarshal json, body corrupt?", 0, 0, 0, 0}
+									} else {
+										log.Printf("Got request for restore with id %s and user %s", bodyrequest.Id, bodyrequest.Username)
 
-									log.Printf("Error restoring %s", errRestore)
+										errRestore, feedback := g.RestAPI.DoRestMailboxItem(g.RestoreSession.Id, g.RestoreMailbox.Id, bodyrequest.Id, bodyrequest.Username, bodyrequest.Password)
+										if errRestore == nil && len(feedback.Exceptions) == 0 {
+											resp = GUIRestoreResponse{Result: "success",
+												Message:           "",
+												CreatedItemsCount: feedback.CreatedItemsCount,
+												MergedItemsCount:  feedback.MergedItemsCount,
+												SkippedItemsCount: feedback.SkippedItemsCount,
+												FailedItemsCount:  feedback.FailedItemsCount}
+										} else if errRestore == nil {
+											resp = GUIRestoreResponse{"failure", fmt.Sprintf("Could not restore, %s does not have enough access?", bodyrequest.Username), 0, 0, 0, 0}
+
+											log.Printf("Exceptions during restore: ")
+											for _, excep := range feedback.Exceptions {
+												log.Printf(" EX-%s", excep)
+											}
+										} else {
+											resp = GUIRestoreResponse{"failure", "Internal Server Error", 0, 0, 0, 0}
+
+											log.Printf("Error restoring %s", errRestore)
+										}
+									}
 								}
+
 							} else {
 								resp = GUIRestoreResponse{"failure", "Not Enough Parameters in URL request", 0, 0, 0, 0}
 							}

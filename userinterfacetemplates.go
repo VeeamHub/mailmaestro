@@ -35,6 +35,40 @@ const restoreTemplate = `{{$sid := .Sessionid}}<!DOCTYPE html>
 			</div>
 		</div>
 		<div class="container-fluid" >
+			<div class="modal fade" id="credentialsLogin" tabindex="-1" role="dialog" aria-labelledby="credentialsLoginLabel" aria-hidden="true">
+				<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+					<h5 class="modal-title">Restore Credentials</h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+					</div>
+					<div class="modal-body">
+
+					<form>
+					<input type="hidden" id="save-restoreitem">
+					<div class="form-group row">
+						<label for="save-restoreusername" class="col-sm-2 col-form-label">Login</label>
+						<div class="col-sm-10">
+						<input class="form-control" id="save-restoreusername" type="text" value="" placeholder="restoreuser@domain.com">
+						</div>
+					</div>
+					<div class="form-group row">
+						<label for="save-restorepassword" class="col-sm-2 col-form-label">Password</label>
+						<div class="col-sm-10">
+						<input type="password" class="form-control" id="save-restorepassword" placeholder="Password">
+						</div>
+					</div>
+					</form>
+					</div>
+					<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+					<button type="button" class="btn btn-primary" onClick="doRestoreWithCredentials()">Restore</button>
+					</div>
+				</div>
+				</div>
+			</div>
 			<div class="row" style="margin-top:85px;">
 				<div class="col-md-2">
 					<div class="nav flex-column nav-pills" id="folders" >
@@ -155,7 +189,8 @@ const restoreTemplate = `{{$sid := .Sessionid}}<!DOCTYPE html>
 								var td = document.createElement("td")
 								var div = document.createElement("div")
 								div.appendChild(document.createTextNode("Restore"))
-								div.setAttribute("onClick","execRestore('"+m.Id+"')")
+								//div.setAttribute("onClick","execRestore('"+m.Id+"')")
+								div.setAttribute("onClick","execRestoreWithCredentials('"+m.Id+"')")
 								div.setAttribute("class","btn btn-success")
 								td.appendChild(div)
 								tr.appendChild(td)
@@ -195,7 +230,8 @@ const restoreTemplate = `{{$sid := .Sessionid}}<!DOCTYPE html>
 								var td = document.createElement("td")
 								var div = document.createElement("div")
 								div.appendChild(document.createTextNode("Restore"))
-								div.setAttribute("onClick","execRestore('"+m.Id+"')")
+								//div.setAttribute("onClick","execRestore('"+m.Id+"')")
+								div.setAttribute("onClick","execRestoreWithCredentials('"+m.Id+"')")
 								div.setAttribute("class","btn btn-success")
 								td.appendChild(div)
 								tr.appendChild(td)
@@ -235,7 +271,8 @@ const restoreTemplate = `{{$sid := .Sessionid}}<!DOCTYPE html>
 								var td = document.createElement("td")
 								var div = document.createElement("div")
 								div.appendChild(document.createTextNode("Restore"))
-								div.setAttribute("onClick","execRestore('"+m.Id+"')")
+								//div.setAttribute("onClick","execRestore('"+m.Id+"')")
+								div.setAttribute("onClick","execRestoreWithCredentials('"+m.Id+"')")
 								div.setAttribute("class","btn btn-success")
 								td.appendChild(div)
 								tr.appendChild(td)
@@ -269,7 +306,8 @@ const restoreTemplate = `{{$sid := .Sessionid}}<!DOCTYPE html>
 								var td = document.createElement("td")
 								var div = document.createElement("div")
 								div.appendChild(document.createTextNode("Restore"))
-								div.setAttribute("onClick","execRestore('"+m.Id+"')")
+								//div.setAttribute("onClick","execRestore('"+m.Id+"')")
+								div.setAttribute("onClick","execRestoreWithCredentials('"+m.Id+"')")
 								div.setAttribute("class","btn btn-success")
 								td.appendChild(div)
 								tr.appendChild(td)
@@ -295,7 +333,20 @@ const restoreTemplate = `{{$sid := .Sessionid}}<!DOCTYPE html>
 			}
 			$.ajax(req)
 		}
-		function execRestore(id) {
+
+		function execRestoreWithCredentials(id) {
+			$("#credentialsLogin").modal('show')
+			$("#save-restoreitem").val(id)
+		}
+
+		function doRestoreWithCredentials() {
+			var restoreitem = $("#save-restoreitem").val()
+			var restoreusername = $("#save-restoreusername").val()
+			var restorepassword = $("#save-restorepassword").val()
+			execRestore(restoreitem,restoreusername,restorepassword)
+			$("#credentialsLogin").modal('hide')
+		}
+		function execRestore(id,restoreusername,restorepassword) {
 			clearTimeout(window.restoringAutoClose)
 			clearTimeout(window.delayedBlack)
 
@@ -309,10 +360,18 @@ const restoreTemplate = `{{$sid := .Sessionid}}<!DOCTYPE html>
 			
 			b.show()
 
+			var datastr = JSON.stringify({
+				id: id,
+				restoreusername: restoreusername,
+				restorepassword: restorepassword
+			})
+			
 
 			var req = {
 				dataType: "json", 
 				url:"/{{$sid}}/restorejson/"+id,
+				data:datastr,
+				method:"POST",
 				success:function( data ) {
 					var s = $("#successmsg")
 					var e = $("#dangermsg")

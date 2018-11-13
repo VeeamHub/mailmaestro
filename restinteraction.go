@@ -139,7 +139,7 @@ func (r *RestAPI) Init() error {
 	return err
 }
 
-func (r *RestAPI) StartRestoreAction(orgId string, time string) (error, RestoreSession) {
+func (r *RestAPI) StartRestoreAction(orgId string, time string, restoretype string) (error, RestoreSession) {
 	r.APIUpdate.RLock()
 	defer r.APIUpdate.RUnlock()
 
@@ -149,8 +149,11 @@ func (r *RestAPI) StartRestoreAction(orgId string, time string) (error, RestoreS
 	if r.Client != nil && r.LoggedIn {
 		var resp *http.Response
 		var req *http.Request
-		jsonreq := fmt.Sprintf(`{  "explore":  {"datetime": "%s"  } }`, time)
-		req, err = r.CreateRequest(fmt.Sprintf("Organizations/%s/action", orgId), "Post", jsonreq)
+		jsonreq := fmt.Sprintf(`{  "explore":  {"datetime": "%s", "type": "%s"  } }`, time, restoretype)
+		uri := fmt.Sprintf("Organizations/%s/action", orgId)
+		req, err = r.CreateRequest(uri, "Post", jsonreq)
+		log.Printf("Requesting %s", uri)
+		log.Printf("JSON : %s", jsonreq)
 		if err == nil {
 			resp, err = r.Client.Do(req)
 			if err == nil {

@@ -8,11 +8,12 @@
 	"VBOServer": "localhost",
 	"VBOPort": 4443,
 	"VBOUsername": "administrator",
-	"VBOVersion": "v1",
+	"VBOVersion": "v2",
 	"VBOOrg": "exchange.x.local",
 	"VBOMailBox": "ppeeters@x.local",
 	"LocalStop": true,
 	"LocalPort": 4123,
 	"LocalCert":"",
-	"LocalKey":""
+	"LocalKey":"",
+	"ManualMap":""
 }
