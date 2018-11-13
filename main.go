@@ -46,6 +46,7 @@ func main() {
 	var pkey = flag.String("localkey", "", "Key file for https, if none is provided, it will start in http modus")
 	var plocalstop = flag.Bool("localstop", false, "Allow typing stop to stop the service")
 
+
 	var pldapserver = flag.String("ldapserver", "", "ldap server")
 	var pldapreadonlyuser = flag.String("ldapuser", "", "ldap username")
 	var pldapreadonlypassword = flag.String("ldaprpassword", "", "ldap password")
@@ -67,6 +68,8 @@ func main() {
 
 	var pconfig = flag.String("config", "maestroconf.json", "Use a json config file")
 	var pdump = flag.String("dump", "", "Dump config to file passed as a parameter")
+
+	
 
 	flag.Parse()
 

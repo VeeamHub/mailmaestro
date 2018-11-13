@@ -16,12 +16,12 @@
         {
             "taskName": "Run",
             "type": "shell",
-            "command": "${workspaceRoot}\\..\\..\\..\\..\\bin\\mailmaestro  -key \"\" -cert \"\""
+            "command": "${workspaceRoot}\\..\\..\\..\\..\\bin\\mailmaestro  -localkey \"\" -localcert \"\""
         },
         {
             "taskName": "Build and run",
             "type": "shell",
-            "command": "go install github.com/veeamhub/mailmaestro;${workspaceRoot}\\..\\..\\..\\..\\bin\\mailmaestro -key \"\" -cert \"\""
+            "command": "go install github.com/veeamhub/mailmaestro;${workspaceRoot}\\..\\..\\..\\..\\bin\\mailmaestro -localkey \"\" -localcert \"\""
         },
         {
             "taskName": "Build and run SSL",
