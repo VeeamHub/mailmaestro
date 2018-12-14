@@ -10,6 +10,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -287,8 +288,20 @@ func main() {
 				//<yyyy.MM.dd hh:mm:ss>.
 				// go conversion https://golang.org/src/time/format.go
 
-				layout := "2006-01-02T15:04:05.0000000Z"
+				layout := "2006-01-02T15:04:05.000000Z"
 				targetdate := orgSelected.LastBackupTime
+
+				//because the 0s behind the . seems variable and golang does not like it
+				drp := regexp.MustCompile("[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}[.]([0-9]{1,})[A-Z]")
+				spl := drp.FindStringSubmatch(targetdate)
+				if len(spl) > 1 {
+					ms := ""
+					for i := 0; i < len(spl[1]); i++ {
+						ms = ms + "0"
+					}
+					layout = "2006-01-02T15:04:05." + ms + "Z"
+				}
+
 				t, err := time.Parse(layout, targetdate)
 
 				if err != nil {
@@ -316,11 +329,11 @@ func main() {
 					if err == nil {
 						//log.Printf("Count MBX %d",mbxp.Limit)
 						for _, mbx := range mbxp.MailBoxes {
-							if mbx.Email == config.VBOMailBox {
+							if strings.EqualFold(mbx.Email, config.VBOMailBox) {
 								mbxUser = mbx
 							}
 						}
-						if mbxUser.Id != "" {
+						if mbxUser != nil && mbxUser.Id != "" {
 							log.Printf("Found users mailbox %s (%s)", mbxUser.Id, mbxUser.Email)
 							log.Printf("Can start the demo page")
 
