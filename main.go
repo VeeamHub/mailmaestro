@@ -50,7 +50,7 @@ func main() {
 
 	var pldapserver = flag.String("ldapserver", "", "ldap server")
 	var pldapreadonlyuser = flag.String("ldapuser", "", "ldap username")
-	var pldapreadonlypassword = flag.String("ldaprpassword", "", "ldap password")
+	var pldapreadonlypassword = flag.String("ldappassword", "", "ldap password")
 	var pldapbaseDN = flag.String("ldapbase", "", "baseDN")
 
 	var pldapport = flag.Int("ldapport", 389, "ldap port override")
@@ -66,12 +66,15 @@ func main() {
 
 	var pvboorg = flag.String("vboorg", "", "Will default to first one found if none is supplied")
 	var pmailboxuser = flag.String("vbomailbox", "", "supply email address")
+	var pselectarchive = flag.Bool("vboarchive",false,"do you want to select the archive mailbox or the regular one")
 
 	//override if AD users do not match the email address in the system
 	var pmanualmap = flag.String("manualmap", "", "User authenticating to AD (so it can be different then the Mailbox)")
 
 	var pconfig = flag.String("config", "maestroconf.json", "Use a json config file")
 	var pdump = flag.String("dump", "", "Dump config to file passed as a parameter")
+
+	var targetDateStr = flag.String("targetdate","","specify a target date, if not specified, will select last point")
 
 	flag.Parse()
 
@@ -291,6 +294,9 @@ func main() {
 				layout := "2006-01-02T15:04:05.000000Z"
 				targetdate := orgSelected.LastBackupTime
 
+				if *targetDateStr == "" {
+				log.Printf("Last backup time literal %s",targetdate)
+
 				//because the 0s behind the . seems variable and golang does not like it
 				drp := regexp.MustCompile("[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}[.]([0-9]{1,})[A-Z]")
 				spl := drp.FindStringSubmatch(targetdate)
@@ -309,8 +315,15 @@ func main() {
 					log.Printf("Could not convert last backup date to restore point date %s, we will fail probably soon or older API", err)
 				} else {
 					targetlayout := "2006.01.02 15:04:05"
-					targetdate = t.Format(targetlayout)
+					//Adding one second because microseconds are being cut off and vbo does not like it (no restore point found even if they are a couple of microseconds appart)
+					targetdate = t.Add(time.Second * 1).Format(targetlayout)
 				}
+				} else {
+					targetdate = *targetDateStr
+					log.Printf("Input date from arguments %s",targetdate)
+				}
+
+				
 
 				log.Printf("Using Organization %s (%s) - point %s", orgSelected.Id, orgSelected.Name, targetdate)
 				var restoreSession RestoreSession
@@ -330,7 +343,9 @@ func main() {
 						//log.Printf("Count MBX %d",mbxp.Limit)
 						for _, mbx := range mbxp.MailBoxes {
 							if strings.EqualFold(mbx.Email, config.VBOMailBox) {
-								mbxUser = mbx
+								if *pselectarchive == mbx.IsArchive {
+									mbxUser = mbx
+								}
 							}
 						}
 						if mbxUser != nil && mbxUser.Id != "" {
